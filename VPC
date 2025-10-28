@@ -1,0 +1,5 @@
+Interview Questions on VPC
+
+1)How to connect on-prem data centre with cloud
+to connect our on-prem data center to AWS, we typically establish a Site-to-Site VPN using an IPsec encrypted tunnel between our on-prem firewall/router and the AWS Virtual Private Gateway.
+For production workloads requiring higher bandwidth and lower latency, we use AWS Direct Connect.
