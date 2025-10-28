@@ -13,3 +13,9 @@ Use CloudWatch alerts
 
 3)What are s3 Lifecycle rules?
 S3 Lifecycle Rules are policies that you configure on an S3 bucket to automate the transition and expiration of objects based on their age, storage class, or versioning state. They help optimize storage cost, performance, and data retention automatically.
+We can transition data from S3 Standard to IA after 30 days, then to Glacier after 90 days, and optionally delete after a retention period. 
+Lifecycle rules also handle version cleanup, delete markers, and incomplete multipart uploads. 
+They help in automating cost optimization and housekeeping of S3 buckets.”
+
+
+
