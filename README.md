@@ -1,7 +1,7 @@
-Interview Questions
+Interview Questions for s3
 
 1)Someone accidently deleted data from s3, how can we recover it?
-s3 versioning needs to be enabled
+s3 versioning needs to be enabled 
 In case versioning was disabled ,would restore data from backups, cross-region replicas, or AWS Backup vaults
 I’d enable bucket versioning, object lock, lifecycle policies, MFA delete, and least-privilege IAM policies.
 In production, we never rely on a single protection mechanism. Versioning + Object Lock + Backup is the recommended layered approach
@@ -17,5 +17,67 @@ We can transition data from S3 Standard to IA after 30 days, then to Glacier aft
 Lifecycle rules also handle version cleanup, delete markers, and incomplete multipart uploads. 
 They help in automating cost optimization and housekeeping of S3 buckets.”
 
+4)Differnet types of Storage classes?
+1)S3 Standard: Frequently accessed data, Low latency & high throughput, Examples: Active website content, user uploads, real-time analytics data
+2)S3 Standard-IA (Infrequent Access): For less frequently accessed data, Cheaper storage than Standard, ex: backups, older documents
+3)S3 One Zone-IA : Like Standard-IA but stored in one AZ only Charged per gb retireival . ex: re-creatable data, temporary data, secondary backups
+4)S3 Intelligent-Tiering: Automatically moves objects between frequent and infrequent tiers based on access patterns.EX: Data lakes, content archives
+5)S3 Glacier: archiving data, no immediate access to data, retrieval options: expedited(1-5min),standard?(3-5h),bulk(5-12h)    min storage duration: 90 days
+6)s3 Glacier deep archive: archiving data, no immediate access to data, retrieval options: standard?(within 12h),bulk(within 48h)  min storage duration: 180 days it The cheapest S3 storage class is Glacier Deep Archive, with the lowest cost per GB but longest retrieval time.”
 
+5)How does Glacier differ from Deep Archive?
+Glacier is for infrequently accessed data with faster retrieval times. Deep Archive is even cheaper but has much slower retrieval times, meant for long-term archival and compliance.”
+
+6)Can I retrieve Deep Archive instantly?
+No. S3 Glacier Deep Archive cannot be retrieved instantly. It requires hours to restore. If we need near-instant access to archived data, we would use Glacier Flexible Retrieval.”
+
+7)Which storage type is cheapest?
+Standard-IA is cheaper storage for predictable infrequent access with retrieval costs. Intelligent-Tiering automatically moves objects between tiers based on access, ideal when access patterns are unknown or change.”
+
+8)When would you use One-Zone IA?
+I use S3 One-Zone IA for infrequently accessed, non-critical, recreatable data where I want lower storage cost and can tolerate data loss in case of an AZ outage.”
+
+9)  You need to host a static website using S3. What steps and configurations are required?
+“To host a static website on S3, I create a public S3 bucket, enable static website hosting, upload the content, adjust bucket policies for public read access, and optionally integrate Route53 and CloudFront for custom domain and SSL support.”
+
+10) A client requires all data in S3 to be encrypted at rest and in transit. How do you achieve this?
+To encrypt data at rest in S3, enable default Server-Side Encryption (preferably SSE-KMS for auditability) and enforce it with a bucket policy denying uploads without encryption headers.
+To encrypt data in transit, ensure all access to the bucket uses HTTPS/TLS and apply a bucket policy that denies any insecure (non-HTTPS) requests. Optionally use VPC endpoints and block public access for additional security.
+
+11). Your analytics team needs read-only access to only one folder inside an S3 bucket. How do you configure permissions?
+I would create an IAM policy that grants s3:ListBucket and s3:GetObject permissions only to the folder prefix inside the bucket. This is done by specifying the path in the ARN (e.g., bucket-name/folder/*) so the analytics team can only read objects under that folder while having no access elsewhere
+
+12) Your logs in S3 should automatically delete after 90 days. Which S3 feature would you use?
+I would configure an S3 Lifecycle rule targeting the logs prefix and set an expiration policy of 90 days. This automatically deletes objects older than 90 days, helping reduce storage costs and avoiding manual cleanup.
+
+13)You can upload and delete objects, but you cannot open them. What would you check first?
+If I can upload and delete objects but cannot open them, the first thing I would check is whether I have the s3:GetObject permission in IAM/bucket policy. 
+Upload and delete require PutObject and DeleteObject, but opening requires GetObject.
+I would also verify if Block Public Access or KMS encryption policies are preventing access.
+
+14)Your application needs to upload files directly to S3 without passing through your backend server. How would you set this up?
+I would enable direct client uploads to S3 using pre-signed URLs. 
+The backend exposes a small API that generates a temporary signed upload URL with limited permissions and expiry. 
+The client then uploads the file directly to S3 using that URL, bypassing the backend. This reduces backend load, improves performance, and keeps uploads secure without exposing credentials.
+I would also configure CORS and ensure the IAM role allows s3:PutObject.
+
+15)A compliance requirement says that no one should be able to delete S3 objects for 7 years. Which feature would you enable?
+I would enable S3 Object Lock in Compliance Mode and configure a 7-year retention period.
+This enforces WORM behavior so objects cannot be deleted, modified, or overwritten by any user—including the root account—until the retention expires, meeting regulatory compliance requirements.
+
+16)You want to replicate S3 data across regions for disaster recovery. How would you configure this?
+Business continuity if region A is down → data still available in region B.
+Any new objects created in the source bucket are automatically replicated to the destination bucket in another region.
+To replicate data for disaster recovery, I would configure S3 Cross-Region Replication. 
+First, I enable versioning on both source and destination buckets. 
+Then I create a replication rule that specifies the destination bucket in another region. 
+AWS automatically creates the required IAM role for replication permissions.
+Optionally, I can enable delete marker replication and choose storage classes.
+After setup, any new objects uploaded to the source bucket are automatically copied to the destination region, ensuring high availability and DR compliance.
+
+17)Your S3 bucket has millions of objects, and listing objects has become very slow. What approach would you use?
+When an S3 bucket grows to millions of objects, listing becomes slow due to prefix partitioning limitations. 
+To optimize this, I would partition the objects using meaningful prefixes such as date-based or hashed structures to distribute load across S3 partitions.
+For large-scale metadata operations, I would enable S3 Inventory and query the results using Athena instead of directly listing from the bucket.
+This avoids costly full-bucket scans and keeps performance predictable.
 
