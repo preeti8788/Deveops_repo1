@@ -1,0 +1,112 @@
+1)You have a private subnet with no internet access, but your instances need to download updates. How do you enable this securely?
+Private Subnet (EC2 Instances) → Route to NAT Gateway → Internet Gateway → Internet
+NAT Gateway is placed in a Public Subnet
+Since the subnet is private, we don’t give direct internet access. To allow secure outbound traffic for updates,
+we deploy a NAT Gateway in a public subnet and route private subnet traffic through it.
+This enables instances to download patches securely without exposing them to inbound internet.
+If updates are only from AWS services (e.g., S3, SSM), I would use VPC Endpoints to avoid internet usage entirely.
+
+2)Your application in one VPC needs to communicate with a database in another VPC (same region). How would you set this up?
+I would create a VPC Peering connection between the two VPCs. Then, 
+I would update route tables in both VPCs to allow traffic over private IPs and modify the DB security group to allow inbound traffic from the application VPC.
+If multiple VPCs need to communicate in the future, I would choose a Transit Gateway for scalable hub-and-spoke connectivity.
+
+3)You've created a new EC2 instance in a public subnet but it cannot access the internet. What might be misconfigured?
+If a public subnet EC2 cannot access the internet, I would first verify if the instance has a public IP or EIP. 
+Then I would check if the subnet route table has a 0.0.0.0/0 route pointing to the Internet Gateway. 
+I would also ensure the IGW is attached to the VPC, and verify security group/NACL rules allow outbound traffic.
+Any misconfiguration in these components can block internet access.
+
+4)How do you restrict access to an EC2 instance so that only a specific IP range can connect?
+To restrict access to an EC2 instance to a specific IP range, 
+I would update the instance’s Security Group inbound rules to allow only that IP range. For example, if only the corporate network should connect,
+I would configure the SG to allow inbound traffic (e.g., SSH/HTTPS) only from that range, such as 203.0.113.0/24. This ensures all other IPs are blocked.
+Optionally, I could also enforce it at the subnet level using NACLs for an extra security layer.
+
+
+5)Your team wants to host multiple environments (dev, test, prod) in a single AWS account. How would you design the VPCs?
+I would design separate VPCs for Dev, Test, and Prod within the same AWS account to ensure proper network isolation and security boundaries.
+Each VPC would have public, private application, and private database subnets across multiple AZs. 
+Prod would have stricter access controls, dedicated NAT gateways, and least-privilege IAM policies.
+If inter-environment communication is required, I would use VPC Peering or Transit Gateway with selective route and security controls
+
+6)You deployed a NAT Gateway but still can't reach the internet from private subnets. What could be wrong?
+Even if a NAT Gateway is deployed, private subnet instances may fail to reach the internet due to incorrect route table configuration.
+The private subnet must route 0.0.0.0/0 to the NAT Gateway, and the NAT must be in a public subnet that has a route to the Internet Gateway.
+Missing EIP, wrong subnet–route-table associations, or restrictive NACL/Security Group rules can also block access.
+
+7)B. VPC Networking Issue (NAT/Route Table Misconfiguration)
+Incorrect route table configuration — Private subnet was mistakenly configured to use Internet Gateway instead of NAT Gateway.
+FrOM PRIVATE EC2 curl google.com,ping 8.8.8.8
+We faced an issue where EC2 instances in a private subnet suddenly couldn't access the internet, affecting deployments and updates. 
+During troubleshooting, I verified route tables and found that the private subnet was incorrectly routing 0.0.0.0/0 to the Internet Gateway instead of the NAT Gateway. 
+Also, NACL rules were restricting ephemeral ports. I corrected the route to NAT Gateway and updated outbound rules, after which connectivity was restored.
+To prevent recurrence, I documented a VPC networking checklist for our team. The issue was resolved in under an hour.”
+
+8)3 tier architecture what all things would basically require IN GCP
+Networking layer, Web Tier, App tier, database tier,  IAM, Security & Monitoring
+1)Public Subnet → Web Tier Compute Engine (VMs)	, GKE (Kubernetes),App Engine	,Cloud Load Balancer
+2)Private Subnet → App Tier Internal Load Balancer, GKE / Cloud Run, Compute Engine (VMs)
+3)Private Restricted Subnet → Database Tier  Database Type	Recommended Service
+  Relational DB	Cloud SQL (MySQL, PostgreSQL, SQL Server)
+  NoSQL	Firestore / Cloud Bigtable
+  Caching Layer	Memorystore (Redis)
+  Data Warehouse	BigQuery 
+4)IAM, Security & Monitoring 
+IAM Roles & Service Accounts	
+VPC Service Controls
+Secret Manager	
+Cloud Armor	
+Cloud Monitoring & Logging	
+Cloud Audit Logs	
+In GCP, a 3-tier architecture consists of a VPC with 3 subnets — Web, App, and DB tiers. The Web tier is usually exposed using a Cloud Load Balancer and runs on Compute Engine, GKE, or App Engine. 
+The App tier runs on private Compute Engine or GKE behind an Internal Load Balancer. The DB tier is hosted on Cloud SQL or Firestore in a restricted subnet.
+Cloud NAT enables secure outbound internet access for private resources. IAM, Secret Manager, Cloud Armor, and Cloud Monitoring provide security and observability.
+
+9)How can we get On prem data to cloud  in gcp cloud?
+To move on-prem data to GCP, we can use multiple options based on use case. For secure connectivity, we use Cloud VPN or Cloud Interconnect. 
+For bulk migration, we can use Transfer Appliance or Storage Transfer Service to move data into Cloud Storage or BigQuery.
+For real-time streaming or CDC, Pub/Sub, Dataflow, and Datastream are commonly used. 
+In hybrid environments, VPN or Interconnect ensures a secure link between on-prem and GCP resources.
+
+10)Lambda functions what do they do exactly?
+AWS Lambda is a serverless compute service that allows you to run code without provisioning or managing servers. You only pay for the time your code runs.
+Runs code when triggered (API call, S3 event, schedule, etc.)
+Automatically scales based on requests
+Works as backend compute for event-driven applications
+Integrates with AWS services like S3, DynamoDB, API Gateway, CloudWatch, etc.
+Some scenarios where lambda is used
+1)slack / Teams Notification Automation
+Scenario: Whenever an EC2 instance’s CPU goes above 75%, notify your DevOps team.
+Flow: CloudWatch Alarm triggers Lambda
+Lambda formats a message & sends it to Slack/Teams webhook
+ Useful for monitoring & incident alerts
+2)Developers launch EC2/RDS resources without tags. Tags like Environment, Owner, Cost-Center are required for billing.
+CloudTrail event (resource creation) triggers Lambda
+Lambda adds mandatory tags automatically
+Helps with cost governance & FinOps
+3)Auto Backups and Cleanup
+Scenario: Take daily snapshots of EC2 volumes and delete older ones after 7 days.
+Flow: EventBridge triggers Lambda daily
+Lambda takes snapshot of EC2
+Deletes snapshots older than 7 days
+Saves storage & ensures backup compliance
+4)Authentication & Authorization
+Scenario: Want to control login using custom logic (JWT, OAuth, AD, OTP)?
+Flow: User calls API via API Gateway
+Lambda validates user credentials, generates JWT token
+AWS Lambda is used for automation, event-driven processing, serverless APIs, monitoring, DevOps tasks, IoT, file processing, and real-time notifications.
+It eliminates the need for servers and reduces cost.
+Auto-Tagging: CloudTrail event triggers Lambda to tag newly created resources for cost tracking.
+AMI & Snapshot Automation: Scheduled backup Lambda takes daily EC2 snapshots and deletes older ones after 7 days.
+
+11)What is CDK?
+CDK stands for AWS Cloud Development Kit.
+It is a framework for defining and provisioning cloud infrastructure using real programming languages, instead of writing raw YAML/JSON like CloudFormation or Terraform.
+AWS CDK allows you to write infrastructure as code (IaC) using languages like: jAVA, Python,go,
+
+12)what is the flow whenever we hot google.com.how does the request goes?
+When you enter google.com, the browser first checks cache for the IP. If not found, DNS resolution happens to get the IP from DNS servers.
+Then a TCP 3-way handshake and TLS handshake occur to create a secure connection. 
+The browser sends an HTTPS request, Google’s server responds with HTML/CSS/JS, and the browser renders the page for the user.
+
