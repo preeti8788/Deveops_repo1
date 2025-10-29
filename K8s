@@ -50,6 +50,17 @@ A ReplicationController ensures a specific number of identical pods are running,
 A ReplicaSet is its improved version—supports set-based selectors and is used by Deployments to maintain the desired number of pod replicas.
 Today, we rarely create ReplicaSets directly; instead, we use Deployments, which manage ReplicaSets behind the scenes.
 
+6) Upgrade Procedure in Openshift?
+
+
+7)Taint command in k8s?
+Taints in Kubernetes are used to control which nodes pods are allowed to run on.
+They repel pods that do not have a matching toleration.
+1️) Dedicated Nodes for Specific Workloads
+2)Prevent Workloads on Special Nodes
+3)Node Maintenance / Health Issues
+
+8)bv
 
 
 
