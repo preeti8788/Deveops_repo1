@@ -1,0 +1,52 @@
+INTERVIEW QUESTIONS ON GIT
+
+1)git vs github
+Git is a distributed version control system for tracking and managing code changes locally, 
+whereas GitHub is a cloud platform that hosts Git repositories and provides collaboration features like pull requests, issue management, and automation.”
+
+2)git pull vr git fetch
+git fetch downloads changes from the remote repo without modifying my working copy,allowing me to review them first. 
+git pull performs a fetch followed by an automatic merge into my current branch
+
+3)git clone vs git fork
+Clone = Downloading a copy of remote repo to local to your computer.
+Fork = Making your own copy on GitHub to modify safely.complete copy of someone else’s repository under your GitHub account.
+
+4)git stash
+Git stash is used to temporarily save uncommitted changes without committing them, allowing me to switch branches or pull latest changes safely. 
+The changes are stored in a stack and can later be restored using git stash apply or git stash pop.
+
+5)git rebase
+Git rebase replays commits from one branch on top of another. It’s mainly used to keep a branch updated and maintain a clean, linear history by removing merge commits. 
+Rebase rewrites commit history, so it should only be used on local branches that no one else depends on. 
+
+6)git merge vs git rebase(https://youtu.be/7B_km8LrkJw?si=HkgmPojPaNMjX3j5)
+1)suppose 2 branch are their feature and main, if we add anything to feature branch and merge it with main than one additional commit woule be added which will denote that merge 
+has taken place
+ex: git commit" added new file:
+git log --oneline
+git checkout main  
+git log --oneline
+git merge dev
+2) In git rebase the latest commit in dev only that would be added in main branch , no extra commit would be added suppose we take 2 branch if we rebase dev to main, then it will
+just merge them commits from dev after the main latest commit and no extra commit would be added , so history wont be maintained
+Git merge combines two branches by creating a merge commit and preserves the complete history, resulting in a non-linear graph. 
+Git rebase moves your commits on top of another branch, rewriting history and producing a clean, linear commit graph. 
+Merge is safer for shared branches, while rebase is preferred for keeping feature branches clean.
+
+7)git push vs git cherry-pick
+Cherry-pick = Pick one page from another notebook
+Push = Upload your whole notebook changes to cloud storage
+Example :You fix a production issue quickly in dev
+You cherry-pick that fix into main
+Then you push it to remote to deploy
+
+8)Branching strategy in your project
+In our project, we followed a GitFlow-inspired branching strategy.
+We had integration for production-ready code and develop for ongoing development.
+All new features were developed in feature branches, then merged into develop through Merge Requests with code review and CI validations. 
+Before a release, we created a release branch for final QA and UAT. Once approved, it was merged into main and tagged for production.
+
+
+
+
