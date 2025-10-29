@@ -1,0 +1,55 @@
+Kubernetes
+
+1)How can we debug if any service is not getting launched , if it is deployed in openshift but still not able to open the aplication?
+When an application is deployed but not accessible, debug at 4 layers:
+POD → SERVICE → ROUTE/INGRESS → NETWORK/SECURITY
+1)First ensure the application itself is running fine.
+oc describe pod <pod-name>
+oc logs <pod-name>
+2️⃣ Validate Container Port & Service
+oc exec -it <pod> -- netstat -tnlp
+oc get svc
+oc describe svc <service-name>
+oc get routes
+oc describe route <route-name
+If everything is configured but still inaccessible, check network restrictions: 
+oc get networkpolicy 
+Sometimes app is running but keeps restarting or failing readiness checks:
+I follow a layered approach to debug OpenShift access issues. First, I check if the pod is running and check logs.
+Then I verify the service and ensure ports match. Next, I check the route configuration for external access. 
+If all looks good, I review network policies, resource limits, and health probes.
+Most issues usually occur due to incorrect service port mapping, failing readiness probes, or NetworkPolicy blocking traffic.
+
+2)How can we set the port in gcp if we have to launch a particular service?
+To launch a service on a specific port in GCP, I ensure the application listens on that port and then open the port using a firewall rule.
+If it's on a VM, I allow that port via VPC firewall. 
+For GKE, I expose the port in the Kubernetes Service manifest, usually using a LoadBalancer service.
+For internal access only, I use internal load balancers and restrictive firewall rules.
+
+3)Which deployment strategy did you follow in Kubernetes in your project?
+In our project, we primarily followed the Rolling Update deployment strategy in Kubernetes.
+It allowed us to update the application with zero downtime by gradually replacing old pods with new pods.
+Rolling updates ensured continuous availability and smooth transitions during deployments.
+Additionally, for critical releases where we wanted quick rollback and parallel version comparison, we sometimes used a Blue-Green strategy.
+In such cases, we deployed the new version alongside the existing one and switched traffic only after validation, which minimized release risk.
+We also used Canary deployments for selective rollout of certain major changes, where a small percentage of traffic was routed to new pods first to monitor performance and stability before rolling out fully.
+
+4) Have you performed OS upgrade/patching in cloud?
+In my previous project, we followed a scheduled patch management process to apply security updates, kernel patches, and critical fixes to Linux-based servers running in AWS/GCP.
+We used a phased approach to ensure zero/minimal downtime:
+Pre-Patching Checks: Took AMI/snapshot backups, validated application health, and ensured rollback plans were ready.
+Patching Tools Used:
+For AWS: SSM Patch Manager to automate patching based on patch baselines.
+For GCP: Used OS Patch Management in Google VM Manager for controlled patch rollouts.
+Execution: Applied patches to non-prod first, monitored for stability, and then patched prod servers using a batch/rolling approach.
+Post-Patching Validation: Verified service startup, logs, application accessibility, and performance before signing off.
+If any patch caused regression, we restored the system using snapshots/AMI rollback.
+
+5)Replica set vs replica controller
+A ReplicationController ensures a specific number of identical pods are running, but it is an older object that supports only equality-based selectors.
+A ReplicaSet is its improved version—supports set-based selectors and is used by Deployments to maintain the desired number of pod replicas.
+Today, we rarely create ReplicaSets directly; instead, we use Deployments, which manage ReplicaSets behind the scenes.
+
+
+
+
