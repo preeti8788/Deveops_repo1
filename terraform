@@ -1,0 +1,22 @@
+1) Count vs For each
+count is used when I need multiple identical resources and can reference them by index. 
+for_each is used when resources are unique or when iterating over maps or sets. 
+for_each provides better stability because it's key-based, so changes won't cause unnecessary resource recreation."
+
+2)if we have to delete a single vm in terraform configuration how can we do that?
+Resource created with count	terraform destroy -target
+Resource created with for_each	Remove entry from the map
+Individual resource	Remove resource block and apply
+“To delete a single VM in Terraform without impacting the rest of the infrastructure, we use the terraform destroy -target=<resource> command. For example, terraform destroy -target=aws_instance.web[1] deletes only that instance. 
+If the VM is created with for_each, we remove the specific key from the map so Terraform destroys only that VM.”
+
+3)Terraform taint command
+“To delete a single VM in Terraform without impacting the rest of the infrastructure, we use the terraform destroy -target=<resource> command. 
+For example, terraform destroy -target=aws_instance.web[1] deletes only that instance.
+If the VM is created with for_each, we remove the specific key from the map so Terraform destroys only that VM.”
+
+4)State file is deleted then how can we  recover it?
+“If a Terraform state file is deleted, the recovery depends on the backend.
+If we used a remote backend like S3, GCS, or Terraform Cloud, we restore state from version history.
+If a local backend was used, we restore from the terraform.tfstate.backup file.
+If no backup exists at all, we recreate the state by using terraform import for each resource to rebuild the state file.”
