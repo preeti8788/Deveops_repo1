@@ -60,7 +60,58 @@ They repel pods that do not have a matching toleration.
 2)Prevent Workloads on Special Nodes
 3)Node Maintenance / Health Issues
 
-8)bv
+8)Diff between PV and PVC
+PV is the actual storage available in the cluster, while PVC is a request by a pod for that storage. 
+PV is like the storage unit, and PVC is like the claim to use that storage.”
+PV is created (manually or dynamically via StorageClass)
+PVC is created requesting storage
+Kubernetes binds PVC → PV
+Pod mounts the PVC for storage
+When PVC is deleted, depending on Reclaim Policy, PV is either:
+Retained
+Deleted
+Recycled (deprecated)
+
+9)Cluster Upgrade
+Step	Task 1. Pre-Upgrade Activities
+Check current version & upgrade 
+Review Release Notes	
+Cluster Health Check	All cluster operators must be healthy 
+Backup etcd & cluster config
+2. Control Plane (Master Nodes) Upgrade
+Upgrade Master nodes one by one
+Update control plane components (API Server, etcd, scheduler, controller manager)
+oc adm upgrade --to=<version>
+oc get clusterversion
+3. Worker Nodes Upgrade (Rolling Upgrade)
+Workers are upgraded gradually to ensure workload availability.
+Step	Action
+Cordon Node	Prevent new pods from scheduling
+Drain Node	Evict pods and reschedule to other workers
+Upgrade OS & OpenShift components	Node reboot and update
+Uncordon Node Bring node back to scheduling
+oc adm cordon <node>
+oc adm drain <node> --ignore-daemonsets --force --delete-emptydir-data
+# Upgrade happens through Machine Config Operator (MCO)
+oc adm uncordon <node>
+Post-Upgrade Validation
+
+10) Can we automate the openshift cluster uograde?
+Yes, OpenShift upgrades can be automated. The Cluster Version Operator handles control plane upgrades and the Machine Config Operator automatically upgrades workers in a rolling fashion.
+For enterprise environments, we integrate GitOps or RHACM to schedule automated upgrades with pre/post validation.”
+
+11)Have u used scheduler in kubernetes ?
+Yes, I have experience working with the Kubernetes scheduler. 
+I have used node affinity, anti-affinity, taints & tolerations, resource requests/limits, and topology spread constraints to control pod placement and optimize cluster utilization.
+I also configured pod priority for critical workloads.
+I haven’t built a custom scheduler, but I understand how to run and assign workloads to one if needed.”
+
+12)Have u used kubeproxy?
+“Yes, I have worked with kube-proxy.
+It is responsible for managing the network rules that allow communication between services and pods in the cluster.
+I have used it while troubleshooting service connectivity issues, checking how kube-proxy programs iptables/IPVS rules, and validating if service endpoints are correctly routed.
+
+
 
 
 
