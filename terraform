@@ -7,7 +7,8 @@ for_each provides better stability because it's key-based, so changes won't caus
 Resource created with count	terraform destroy -target
 Resource created with for_each	Remove entry from the map
 Individual resource	Remove resource block and apply
-“To delete a single VM in Terraform without impacting the rest of the infrastructure, we use the terraform destroy -target=<resource> command. For example, terraform destroy -target=aws_instance.web[1] deletes only that instance. 
+“To delete a single VM in Terraform without impacting the rest of the infrastructure, we use the terraform destroy -target=<resource> command.
+For example, terraform destroy -target=aws_instance.web[1] deletes only that instance. 
 If the VM is created with for_each, we remove the specific key from the map so Terraform destroys only that VM.”
 
 3)Terraform taint command
@@ -20,3 +21,5 @@ If the VM is created with for_each, we remove the specific key from the map so T
 If we used a remote backend like S3, GCS, or Terraform Cloud, we restore state from version history.
 If a local backend was used, we restore from the terraform.tfstate.backup file.
 If no backup exists at all, we recreate the state by using terraform import for each resource to rebuild the state file.”
+
+
