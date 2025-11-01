@@ -1,0 +1,26 @@
+1)Running process how can we check it?
+ps -ef
+top
+htop
+pidof sshd
+
+
+2)if we are having any url and and how will we check the dns resolver on this what is the command?
+nslookup example.com
+dig example.com
+
+
+3)if we have a group and we need to add 2 users in that group how , we can add it?
+sudo usermod -aG groupname user1
+sudo usermod -aG groupname user2
+-aG → append the group without removing existing groups.
+If group name = devops and users = alice and bob:
+sudo usermod -aG devops alice
+sudo usermod -aG devops bob
+
+4)How can we verify Verify Members of a Group?
+getent group devops
+
+5)Which distribution have you worked of linux?
+RHEL 8 for enterprise workloads because of its stability,
+I prefer Ubuntu 20.04 due to ease of package management (APT) and wider community support."
