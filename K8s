@@ -50,15 +50,22 @@ A ReplicationController ensures a specific number of identical pods are running,
 A ReplicaSet is its improved version—supports set-based selectors and is used by Deployments to maintain the desired number of pod replicas.
 Today, we rarely create ReplicaSets directly; instead, we use Deployments, which manage ReplicaSets behind the scenes.
 
-6) Upgrade Procedure in Openshift?
-
-
 7)Taint command in k8s?
 Taints in Kubernetes are used to control which nodes pods are allowed to run on.
 They repel pods that do not have a matching toleration.
 1️) Dedicated Nodes for Specific Workloads
 2)Prevent Workloads on Special Nodes
 3)Node Maintenance / Health Issues
+
+Cordon command in k8S?
+Marks a node as unschedulable — new pods won’t be placed there.
+kubectl cordon node1
+To allow scheduling again: kubectl uncordon node1
+
+Diff between cordon and taint?
+kubectl cordon marks a node as unschedulable, so no new pods will be scheduled there, but existing pods keep running. It’s usually used during maintenance.
+kubectl taint applies a rule to a node so only pods with matching tolerations can run on it.
+Taints provide more fine-grained control and are used to dedicate or isolate nodes for specific workloads.
 
 8)Diff between PV and PVC
 PV is the actual storage available in the cluster, while PVC is a request by a pod for that storage. 
@@ -111,6 +118,80 @@ I haven’t built a custom scheduler, but I understand how to run and assign wor
 It is responsible for managing the network rules that allow communication between services and pods in the cluster.
 I have used it while troubleshooting service connectivity issues, checking how kube-proxy programs iptables/IPVS rules, and validating if service endpoints are correctly routed.
 
+13)What is Kubernetes and how does it differ from Docker Swarm?
+Kubernetes is a powerful container orchestration platform that automates deployment, scaling, and management of containerized applications. 
+It provides features like self-healing, auto-scaling, service discovery, load balancing, and strong community ecosystem.
+Docker Swarm also provides container orchestration but is simpler and easier to set up. Kubernetes is more scalable, feature-rich, 
+and suitable for production enterprise environments, whereas Docker Swarm is lightweight and ideal for smaller or less complex deployments.
+
+14)Explain the architecture of Kubernetes — API Server, Controller Manager, Scheduler, etc.
+1)Control Plane Componenets(Master Node)
+API Server: “Kubernetes receptionist + gatekeeper” ,Front-door of Kubernetes; exposes REST APIs, validates requests, and updates etcd
+etcd: “Kubernetes database”, Distributed key-value store that stores the cluster state (source of truth of Kubernetes)
+Controller Manager: “Maintains desired state — keeps things running as defined” , Ensures desired state; runs controllers like Node, Deployment, ReplicaSet controllers
+Scheduler: “Decides where a pod should run”, Assigns pods to worker nodes based on resource usage, constraints, taints/tolerations
+2)Worker Node Components
+Kubelet: Agent on each node that receives pod specs and ensures containers run as expected.
+Container Runtime: Runs the containers (e.g., Docker, containerd, CRI-O).
+Kube-Proxy: Maintains cluster networking and service communication (load balances traffic).
+
+15)How Components Work Together (High-Level Flow)?
+User sends a request (kubectl apply) → API Server
+API Server stores the desired state → etcd
+Controller Manager notices difference between desired and current state
+Scheduler picks a node for the Pod
+Kubelet on that node runs the pod using the container runtime
+Kube-Proxy routes network traffic to/from the pod
+
+16)what is container?
+A container is a lightweight, standalone, and portable software package that includes everything needed to run an application 
+— such as code, runtime, libraries, and dependencies.
+If you build a Python app:
+Without containers → It may fail on another machine due to missing Python version or libraries.
+With a container → You package the app + Python runtime + dependencies into an image and run it anywhere.
+
+17)What is a Pod and how is it different from a container?
+A Pod is the smallest deployable unit in Kubernetes. It acts as a wrapper around one or more containers that run together on the same node and share:
+Network (same IP & port space)
+Storage volumes
+Lifecycle
+In Kubernetes, you don’t deploy containers directly — you deploy Pods.
+
+18)| Feature    | **Container**                                         | **Pod**                                                               |
+| ---------- | ----------------------------------------------------- | --------------------------------------------------------------------- |
+| Definition | A single application package with code + dependencies | A Kubernetes object that runs one or more containers as a single unit |
+| Management | Managed by container runtime (Docker, containerd)     | Managed by Kubernetes                                                 |
+| Networking | Standalone container has its own network namespace    | Containers inside a Pod share the same IP, ports, and localhost       |
+| Storage    | Container has its own filesystem                      | Pod can have shared volumes for data sharing among containers         |
+| Use Case   | One process or microservice                           | Group of tightly coupled containers that must run together            |
+| Deployment | Cannot be directly deployed in Kubernetes             | Kubernetes deploys Pods, not standalone containers                    |
+
+19)You want to run workloads across multiple Kubernetes clusters for high availability — how would you design this?
+To run workloads across multiple Kubernetes clusters for high availability,
+I design either active–active or active–passive topologies with a global traffic layer (Route53/Global Accelerator or equivalent) routing to per-cluster ingress controllers. 
+I externalize state (S3, Redis, globally-replicated DBs), use GitOps (ArgoCD/Flux) to keep manifests consistent across clusters, and implement observability (Prometheus+Thanos, central logging/tracing). 
+Service mesh can provide secure cross-cluster communication and traffic control. 
+Key focuses are data replication strategy, failover testing, secrets management, and automation for scaling and recovery.
+
+20)what is Gitops and Argocd? why have u you used it?
+GitOps is a model where Git acts as the single source of truth for application and infrastructure deployments.
+All Kubernetes manifests are stored and versioned in Git, and deployments happen through pull requests.
+ArgoCD is a GitOps tool that continuously syncs the cluster state with the desired state in Git and provides automated deployments, self-healing, version control, and easy rollbacks. 
+I used ArgoCD to standardize deployments, enable auditability, reduce manual kubectl changes, and manage multi-cluster deployments efficiently with full visibility.
+
+21)Why are Kubernetes pods in CrashLoopBackOff state? Reason: Failed readiness/liveness probes or bad configuration.
+| Reason                                   | Explanation                                           |
+| ---------------------------------------- | ----------------------------------------------------- |
+| **Application code crashes**             | App exits due to unhandled exception or runtime error |
+| **Failed liveness/readiness probes**     | Probes fail → K8s restarts container repeatedly       |
+| **Wrong configuration or env variables** | Missing config, wrong DB URL, wrong API keys          |
+| **Insufficient resources**               | Low memory/CPU causing OOMKilled or throttling        |
+| **Dependencies not available**           | App tries to start before DB, cache, or API is up     |
+| **Incorrect image or command**           | Wrong entrypoint / wrong Docker image version         |
+| **Permission or file system issues**     | App fails due to access/volume mount errors           |
+
+22)Why is my pod getting OOMKilled repeatedly?
+Reason: Container exceeds memory limit.
 
 
 
