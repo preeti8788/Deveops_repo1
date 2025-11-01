@@ -47,6 +47,18 @@ We had integration for production-ready code and develop for ongoing development
 All new features were developed in feature branches, then merged into develop through Merge Requests with code review and CI validations. 
 Before a release, we created a release branch for final QA and UAT. Once approved, it was merged into main and tagged for production.
 
+9)what is pull requests?
+A Pull Request is a way to propose code changes in Git. 
+It allows developers to review, discuss, and approve changes before merging them into a main branch. 
+It ensures code quality, collaboration, and version tracking, making it a standard process in CI/CD and GitOps workflows.
+
+10)how have u used gitops argocd in your project to make work easy?
+In my project, I implemented GitOps using ArgoCD to automate Kubernetes deployments.
+We stored all manifests and Helm charts in Git, making Git the single source of truth.
+Developers raised Pull Requests for any change, and once approved, ArgoCD automatically synced the cluster. 
+This removed manual kubectl deployments, reduced errors, enabled easy rollbacks, and ensured the cluster state always matched Git.
+It also provided full visibility into multi-environment deployments and made the release process much faster and controlled.
+
 
 
 
