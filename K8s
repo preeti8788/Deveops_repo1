@@ -216,6 +216,152 @@ StorageClass must support volume expansion (allowVolumeExpansion: true)
 | Static content                | Medium | Expand or use external storage |
 | Logs filled the volume        | Medium | Rotate logs or move to sidecar |
 
+25)What is s deployment?
+A Deployment in Kubernetes is a controller that manages the lifecycle of Pods and ReplicaSets.
+It ensures that the desired number of pod replicas are running and allows easy updates, rollbacks, and scaling of applications.
+Deployment
+   └── ReplicaSet
+         └── Pods
+
+26)How do you perform a rolling update and rollback in Kubernetes?
+A rolling update replaces Pods one by one with the new version, ensuring the service remains available during the update.
+kubectl set image deployment/my-app my-container=my-image:v2
+kubectl rollout status deployment/my-app
+If the new release has issues, you can revert to the previous version. rollback
+kubectl rollout undo deployment/my-app
+kubectl rollout history deployment/my-app
+
+27)How do you check which pod is consuming the most CPU or memory?
+kubectl top pods - This shows CPU & memory usage of all pods in the current namespace.
+kubectl top pods --all-namespaces
+kubectl top pods --all-namespaces | sort -k3 -nr
+kubectl top nodes
+kubectl describe pod <pod-name>
+
+28)How can you restart a specific pod or deployment in Kubernetes?
+| Action              | Command                                      |
+| ------------------- | -------------------------------------------- |
+| Restart deployment  | `kubectl rollout restart deployment <name>`  |
+| Restart single pod  | `kubectl delete pod <name>`                  |
+| Restart StatefulSet | `kubectl rollout restart statefulset <name>` |
+| Restart DaemonSet   | `kubectl rollout restart daemonset <name>`   |
+
+29)How do you expose an application running inside a pod to the outside world?
+To expose a pod to the outside world, you need to use a Service or an Ingress. 
+You never expose a pod directly, because pods are temporary and their IP changes.
+1.Using a Service of Type: NodePort (Basic)
+Exposes app on each worker node’s IP at a port (30000–32767).
+2.Using LoadBalancer Service (Production on Cloud)
+Creates a cloud LB (AWS ELB, GCP LB, Azure LB) and exposes app publicly.
+3. Using Ingress + Ingress Controller (Best for Production HTTP/HTTPS)
+Ingress routes traffic using domain names & paths and supports SSL/TLS.
+4. Port Forwarding (Temporary for Debugging)
+Expose a pod only for your local machine — no service required.
+| Method       | Use Case                         |
+| ------------ | -------------------------------- |
+| Port-Forward | Local debugging                  |
+| NodePort     | Small dev/test setups            |
+| LoadBalancer | Public access on Cloud           |
+| Ingress      | Production-grade routing & HTTPS |
+
+30)What are the different types of Kubernetes services (ClusterIP, NodePort, LoadBalancer)?
+| Feature          | ClusterIP         | NodePort          | LoadBalancer             |
+| ---------------- | ----------------- | ----------------- | ------------------------ |
+| Internal Access  | ✅                 | ✅                 | ✅                        |
+| External Access  | ❌                 | ✅ (via Node IP)   | ✅ (via LB IP)            |
+| Cloud LB Created | ❌                 | ❌                 | ✅                        |
+| Use Case         | Internal services | Testing / On-prem | Production external apps |
+| Type                                             | Description                                               |       
+| **Headless Service**                             | (ClusterIP: None) For stateful apps, gives direct pod DNS |
+| **Ingress** *(not a service but often confused)* | Provides HTTP/HTTPS routing to services                   |
+
+31)Explain the difference between readiness and liveness probes.
+Readiness Probe checks if the application is ready to serve traffic. If it fails, the pod is removed from the service load balancer.
+Liveness Probe checks if the application is healthy. If it fails, Kubernetes restarts the container.
+| Feature        | Readiness Probe                    | Liveness Probe                       |
+| Checks         | If app is ready to serve traffic   | If app is alive or stuck             |
+| Failure Action | Pod removed from Service endpoints | Container is restarted               |
+| Traffic Impact | No traffic sent until ready        | Restart can cause temporary downtime |
+| When used      | Startup and during runtime         | During runtime health                |
+
+32)Explain the concept of ConfigMaps and Secrets — and how you’d use them.
+ConfigMaps and Secrets are Kubernetes objects used to inject configuration data into pods—but the key difference is sensitivity of data.
+1. Create ConfigMap YAML
+2. Inject into Pod as Environment Variables
+3. Mount as a File
+| Feature    | ConfigMap             | Secret                            |
+| ---------- | --------------------- | --------------------------------- |
+| Stores     | Non-sensitive data    | Sensitive data                    |
+| Encoding   | Plain text            | Base64-encoded                    |
+| Security   | No special protection | Can be encrypted, RBAC-controlled |
+| Size Limit | 1 MB                  | 1 MB                              |
+| Best For   | Config values         | Passwords, tokens, keys           |
+Ex: | Config Item           | Store In  |
+    | DB hostname, port     | ConfigMap |
+    | DB username, password | Secret    |
+
+33)How can you perform zero-downtime deployment in Kubernetes?
+1. Rolling Updates (Default Deployment Strategy) : Kubernetes gradually replaces old pods with new ones — keeping the app running.
+2. Readiness Probes (Very Important) : Only send traffic to a pod after it's ready.
+3. Liveness Probes : Ensures faulty pods are auto-restarted and kept healthy.
+4. PodDisruptionBudget (PDB) : Prevents too many pods from being down at the same time.
+5. Stop Sending Traffic to Old Pods Before Killing Them : Use terminationGracePeriodSeconds and preStop hook to drain connections.
+6. Use Multi-Version Support (Optional, for Canary/Blue-Green)
+| Strategy       | Best For                  | Downtime |
+| Rolling Update | Standard apps             | None     |
+| Blue-Green     | High-risk releases        | None     |
+| Canary         | Testing with % of traffic | None     |
+
+34)Your application is not resolving environment variables — what could be the issue?
+Environment variables may not resolve if the ConfigMap/Secret reference is wrong, not created, or located in a different namespace. 
+Other reasons include incorrect YAML syntax, using wrong keys, mounting as files but expecting env vars, or the app not reloading variables at runtime. 
+Java/Node apps often require a pod restart for changes to reflect.
+
+35)How do you use taints and tolerations in Kubernetes scheduling?
+Taints are applied to nodes to prevent certain pods from being scheduled on them.
+Tolerations are added to pods so they can be scheduled on tainted nodes.
+Taints control where pods cannot run, and tolerations allow exceptions.
+Common use cases include workload isolation, dedicated nodes for production or GPU workloads, and avoiding scheduling on master nodes.
+
+36)What’s the difference between a DaemonSet and a Deployment?
+| Feature           | **DaemonSet**                                                          | **Deployment**                                        |
+| ----------------- | ---------------------------------------------------------------------- | ----------------------------------------------------- |
+| Pod Placement     | Runs **one pod per node** (or specific nodes)                          | Runs **multiple replicas** anywhere in the cluster    |
+| Use Case          | Node-level services (monitoring, logging, networking)                  | Application workloads (web apps, APIs, microservices) |
+| Scheduling        | Automatically runs on **every node** (unless nodeSelector/taints used) | Scheduler decides optimal placement                   |
+| Updates           | Rolling updates supported                                              | Rolling updates & rollbacks supported                 |
+| Example Workloads | Daemon: Prometheus Node Exporter, Fluentd, CNI plugins                 | Deploy: Nginx, Java app, Node.js service              |
+
+37)How do you restrict certain pods from communicating with others?
+A NetworkPolicy controls ingress (incoming) and egress (outgoing) network traffic between pods.
+By default, all pods can talk to each other unless a NetworkPolicy is applied.
+They define which pods can send or receive traffic using ingress and egress rules based on pod labels, namespaces, and ports.
+📍 Backend should be accessed only by Frontend
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-frontend-to-backend
+  namespace: prod
+spec:
+  podSelector:
+    matchLabels:
+      app: backend           # Policy applies to backend pods
+  policyTypes:
+  - Ingress
+  ingress:
+  - from:
+    - podSelector:
+        matchLabels:
+          app: frontend      # Only frontend pods allowed
+    ports:
+    - protocol: TCP
+      port: 80
+
+
+
+
+
+
 
 
 
