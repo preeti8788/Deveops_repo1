@@ -193,6 +193,29 @@ I used ArgoCD to standardize deployments, enable auditability, reduce manual kub
 22)Why is my pod getting OOMKilled repeatedly?
 Reason: Container exceeds memory limit.
 
+23)if any production scenario can we resduce the pvc attached?
+Yes, but only in certain storage systems and with caution — shrinking a PVC is risky and often not supported.
+Because if the filesystem contains 60GB data and you shrink to 40GB → data corruption will happen.
+Cloud block storage (EBS, Azure Disk) doesn’t support size reduction because:
+Shrinking requires rewriting blocks and may corrupt data.
+Recommended Production Approach
+Create a new PVC with smaller size.
+Copy data from old PVC to new PVC (using rsync or backup/restore).
+Update the Deployment/StatefulSet to use the new PVC.
+Delete the old PVC after validation.
+
+24)Can we add pvc in the porduction environment ,once its is full?
+Yes — you can add/extend PVC in production when it becomes full.
+This is a common real-world scenario, and Kubernetes supports PVC expansion if the storage backend allows it.
+StorageClass must support volume expansion (allowVolumeExpansion: true)
+✔ PVC must use a supported CSI driver
+✔ Filesystem expansion required inside the pod (K8s handles this automatically for most cases)
+| Situation                     | Impact | Recommended Action             |
+| ----------------------------- | ------ | ------------------------------ |
+| DB pods crash due to no space | High   | Expand PVC ASAP + clean logs   |
+| Static content                | Medium | Expand or use external storage |
+| Logs filled the volume        | Medium | Rotate logs or move to sidecar |
+
 
 
 
