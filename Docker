@@ -1,0 +1,9 @@
+1)Diff between container and vm
+Containers are lightweight, share the host OS kernel, start in seconds, and are ideal for microservices and cloud-native applications.
+VMs run a full OS on a hypervisor, making them more secure but heavier and slower. 
+Containers focus on speed and portability, while VMs focus on strong isolation and complete OS environments.”
+
+2)What are Init containers and when do you use them?
+“Init containers are specialized containers that run before the main container in a Pod. 
+They are used for tasks like setting up configuration, checking dependencies, running migrations, or preparing data.
+Each init container must complete successfully before the next one runs, ensuring the application starts only when the environment is fully ready.”
