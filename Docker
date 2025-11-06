@@ -7,3 +7,36 @@ Containers focus on speed and portability, while VMs focus on strong isolation a
 “Init containers are specialized containers that run before the main container in a Pod. 
 They are used for tasks like setting up configuration, checking dependencies, running migrations, or preparing data.
 Each init container must complete successfully before the next one runs, ensuring the application starts only when the environment is fully ready.”
+
+3)Write a multi-stage Dockerfile and explain each line.
+Multi-stage Dockerfiles allow us to use one stage for building the application and another stage for running it.
+This results in smaller, more secure images because only the necessary runtime artifacts are copied into the final image.”
+
+4) What is a Dockerfile?
+Dockerfile is a text file that contains a set of instructions that Docker uses to build an image.
+It tells Docker what to install, copy, configure, and run inside the container.
+# Use an official Python image as the base
+FROM python:3.10-slim
+# Set the working directory inside the container
+WORKDIR /app
+# Copy the application code to the container
+COPY app.py .
+# Run the Python program when the container starts
+CMD ["python", "app.py"]
+
+5)What’s the difference between RUN, CMD, and ENTRYPOINT?
+RUN builds the image, CMD sets a default command for the container, and ENTRYPOINT defines the main executable that always runs.
+CMD is easily overridden, while ENTRYPOINT is more fixed and usually combined with CMD for flexibility.
+RUN apt-get update && apt-get install -y python3  : Used to build the image
+CMD ["python3", "app.py"] : Specifies the default command when the container starts
+ENTRYPOINT ["python3"] : Specifies the main command that always runs
+CMD ["app.py"]
+
+6)How do you optimize your Docker image for production?
+1. Use a Small Base Image
+2. Use Multi-Stage Builds
+3. Avoid Root User
+4. Reduce Layers & Clean Up
+6. Copy Only What You Need use .dockerignore
+7. Scan Images for Vulnerabilities with tools like synk, aqua
+
