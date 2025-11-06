@@ -1,5 +1,9 @@
 Kubernetes
 
+OpenShift is an enterprise-grade Kubernetes platform built by Red Hat. 
+It extends Kubernetes with enhanced security, automation, built-in CI/CD, developer tools, and integrated services. 
+OpenShift simplifies container management across hybrid and multi-cloud environments and is widely used in enterprises that need secure and compliant production deployments.”
+
 1)How can we debug if any service is not getting launched , if it is deployed in openshift but still not able to open the aplication?
 When an application is deployed but not accessible, debug at 4 layers:
 POD → SERVICE → ROUTE/INGRESS → NETWORK/SECURITY
