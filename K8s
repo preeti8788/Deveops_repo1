@@ -356,7 +356,82 @@ spec:
     ports:
     - protocol: TCP
       port: 80
+38)What are some best practices for securing Kubernetes clusters in production?
+To secure Kubernetes in production, enforce RBAC and least privilege, restrict access to the API server, 
+secure secrets with Vault or Sealed Secrets, enforce Pod Security Standards to avoid privileged containers, 
+use network policies for zero-trust traffic, scan and sign container images, set resource quotas, 
+monitor with tools like Prometheus/Falco, and implement policy enforcement via OPA or Kyverno.
+Additionally, apply CIS benchmarks and adopt DevSecOps supply chain security practices.
 
+39)how do How do you back up and restore your cluster and resources in openshift
+Backing up OpenShift involves capturing:
+Cluster State (etcd)
+OpenShift Resources (projects, deployments, routes, operators)
+Persistent Storage Data (PVCs)
+“In OpenShift, I follow a structured backup strategy involving etcd backup, resource backup, and persistent storage backup. For the cluster state, I take etcd snapshots using the built-in cluster-backup.sh script, which helps recover the control plane.
+For application resources like deployments, routes, secrets, and image streams, I back them up via oc get exports or Velero. For persistent volume data, we rely on storage-level snapshots — for example ODF snapshots or cloud provider disk snapshots.
+We mainly use Velero for scheduled automated backups and disaster recovery, and it allows restoring specific namespaces or the full cluster when needed.”
+
+40)How do you implement pod auto-scaling in Kubernetes?
+Pod auto-scaling in Kubernetes is implemented using a Horizontal Pod Autoscaler (HPA).
+First, we ensure the Metrics Server is running, then create an HPA to monitor CPU, memory, or custom metrics.
+The HPA automatically increases or decreases the number of pods based on the workload. 
+For resource-based scaling we use HPA, for resource adjustment VPA, and for scaling nodes we use Cluster Autoscaler.
+
+41)How do you integrate Kubernetes with Jenkins or GitHub Actions in a CI/CD pipeline?
+Tekton or GitHub Actions handle the CI part—build, test, scan, and push images—while deployments to Kubernetes or OpenShift are done using kubectl/helm or via GitOps with Argo CD. 
+This provides a fully automated, secure, and version-controlled CI/CD pipeline."
+
+42)Explain what happens when you run kubectl apply -f deployment.yaml.
+kubectl apply → API Server → etcd → Deployment Controller → ReplicaSet → Scheduler → Kubelet → Container Runtime → Pod Running
+kubectl apply -f deployment.yaml sends the manifest to the API server, which validates and stores it in etcd as the desired state. 
+The Deployment controller notices the new or updated state and creates or updates a ReplicaSet. 
+The ReplicaSet ensures the correct number of Pods exist. 
+The Scheduler assigns those Pods to nodes, and the kubelet on each node pulls the container image and starts the containers. Probes, networking, and service endpoints are then configured.”
+
+43)How do you monitor Kubernetes clusters using Prometheus and Grafana?
+To set up Prometheus and Grafana on OpenShift using pipelines, we store the monitoring configuration (Prometheus Operator, ServiceMonitors, Grafana dashboards) in Git.
+We create Tekton pipeline tasks to clone the repo, deploy the monitoring stack via Helm or oc apply, and verify the rollout. 
+Any update to monitoring config triggers the pipeline, enabling automated, version-controlled monitoring setup across environments.
+Grafana dashboards and Prometheus rules are also deployed through the pipeline to maintain consistency and enable easy rollbacks.
+
+44) How do you restrict certain pods from communicating with others?
+A NetworkPolicy is a Kubernetes resource that controls ingress (incoming) and egress (outgoing) traffic for pods, based on:
+Pod labels
+Namespace labels
+IP blocks
+Ports
+Policies can restrict:
+Pod → Pod
+Pod → Namespace
+Pod → Internet
+We restrict pod communication using Kubernetes NetworkPolicies. By labeling pods and defining ingress/egress rules, 
+we can control which pods or namespaces can communicate. 
+Once a policy applies to a pod, all other traffic is denied unless explicitly allowed.”
+
+45)Explain how Ingress works in Kubernetes.
+How Ingress Works (Flow)
+User sends request → DNS points to Ingress Controller’s public IP
+Controller receives the request
+Based on host/path rules, it routes traffic to target services inside cluster
+Client
+  |
+[ Public IP / Load Balancer ]
+  |
+[ Ingress Controller ]  ---> Reads Ingress rules
+  |
+  +--> Service A → Pods
+  +--> Service B → Pods
+“Ingress in Kubernetes provides external access to services using HTTP/HTTPS.
+It works with an Ingress Controller, which reads Ingress rules and routes traffic to the appropriate Services. 
+It supports host-based and path-based routing, TLS termination, and advanced features like rewrites and authentication.
+It allows multiple services to share a single public IP, making it cost-efficient and scalable.”
+
+45)How do you roll back to a previous Deployment version in Kubernetes?
+kubectl rollout history deployment <deployment-name>
+kubectl rollout undo deployment <deployment-name>
+kubectl rollout undo deployment <deployment-name> --to-revision=<number>
+kubectl rollout status deployment <deployment-name>
 
 
 
