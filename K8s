@@ -433,6 +433,31 @@ kubectl rollout undo deployment <deployment-name>
 kubectl rollout undo deployment <deployment-name> --to-revision=<number>
 kubectl rollout status deployment <deployment-name>
 
+46)what kind of ci cd approach u prefer, ci and cd separate or what?
+CI Pipeline: Code → Build → Test → Scan → Artifact/Image creation → Push to registry
+CD Pipeline: Triggered only after CI success; deploys to Dev → QA → Stage → Prod based on approvals
+Example:CI: GitHub Actions/Tekton/Jenkins builds Docker image, runs tests, pushes image to registry (ECR/GCR/ARO)
+CD: ArgoCD or Tekton deploys images to clusters based on GitOps model
+I prefer CI and CD to be logically separated but linked into a single automated workflow. CI focuses on build and test, while CD handles deployment and release. 
+This separation ensures fast feedback for developers and controlled, secure deployments for operations.
+CI pushes a tested artifact to the registry, and CD deploys it to environments using automated promotion and approval gates. 
+This approach provides both speed and governance, especially in Kubernetes or cloud environments
+
+47)What kind of manual approvals your CICD included in Production befor edeployment?
+| **Approval Gate**                               | **Purpose**                                                | **Who Approved?**                     |
+| ----------------------------------------------- | ---------------------------------------------------------- | ------------------------------------- |
+| **Change Request (CR) Approval**                | Ensure Production deployment is authorized                 | Change Advisory Board (CAB) / Manager |
+| **QA Sign-off**                                 | Confirm the build passed QA + functional testing           | QA Lead / Test Manager                |
+| **Business/PO Approval**                        | Validate business readiness & release plan                 | Product Owner / Business Stakeholder  |
+| **Security & Compliance Check (If applicable)** | Ensure no vulnerabilities or compliance issues before prod | Security Team / DevSecOps             |
+
+48)if any issue faced at the code in production how would the developers resove it after going to deployment?
+if any issue is found in Production after deployment, our first step is to stabilize the system, usually by rolling back to the last stable release.
+ command: oc rollout undo deployment/<app-name>
+Then the Dev and DevOps teams perform an RCA using logs and monitoring tools( grafan , prome, elk). 
+Developers create a fix branch, implement and test the fix, and the change is deployed again through the CI/CD pipeline — not manually — ensuring approval gates and validations in lower environments.
+Once revalidated in UAT and Pre-Prod, the fix is promoted to Production with required approvals, followed by post-deployment monitorin
+Monitors logs and metrics, Validates that the issue is resolved
 
 
 
