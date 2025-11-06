@@ -1,0 +1,12 @@
+What is Amazon API Gateway, and how does it fit into a serverless architecture?
+| Component                     | Role                                                       |
+| ----------------------------- | ---------------------------------------------------------- |
+| **API Gateway**               | Front door for applications to invoke serverless functions |
+| **AWS Lambda**                | Executes the business logic                                |
+| **IAM, Cognito, or API Keys** | Secures access                                             |
+| **CloudWatch**                | Monitoring, logging, metrics                               |
+| **DynamoDB/S3**               | Data storage (serverless backend)                          |
+“API Gateway is a fully managed service for creating and managing APIs.
+In a serverless architecture, it acts as the entry point for client requests and integrates closely with AWS Lambda.
+API Gateway handles request routing, security, throttling, and monitoring, allowing Lambda to run business logic without any infrastructure management.
+Together, they enable a highly scalable, cost-effective, and fully serverless API-driven application.”
