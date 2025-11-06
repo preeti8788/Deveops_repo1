@@ -10,6 +10,8 @@ Individual resource	Remove resource block and apply
 “To delete a single VM in Terraform without impacting the rest of the infrastructure, we use the terraform destroy -target=<resource> command.
 For example, terraform destroy -target=aws_instance.web[1] deletes only that instance. 
 If the VM is created with for_each, we remove the specific key from the map so Terraform destroys only that VM.”
+When resources are created using count, Terraform treats them as indexed resources like aws_instance.vm[0], aws_instance.vm[1], etc.
+To delete only one VM without destroying the others, I would target that specific instance using its index.
 
 3)Terraform taint command
 “To delete a single VM in Terraform without impacting the rest of the infrastructure, we use the terraform destroy -target=<resource> command. 
@@ -21,5 +23,114 @@ If the VM is created with for_each, we remove the specific key from the map so T
 If we used a remote backend like S3, GCS, or Terraform Cloud, we restore state from version history.
 If a local backend was used, we restore from the terraform.tfstate.backup file.
 If no backup exists at all, we recreate the state by using terraform import for each resource to rebuild the state file.”
+terraform import aws_instance.web i-0123456789
+Enable versioning & backups going forward
 
+
+5)Some Imp Terraform Commands
+1. terraform init
+Initializes Terraform, downloads required providers & sets up backend.
+
+2.terraform fmt
+Formats your code into standard style.
+
+3.terraform validate
+Checks configuration for syntax or logical errors.
+Planning & Execution
+
+4.terraform plan
+Previews the changes before applying — safe check.
+
+5.terraform apply
+Applies the plan and creates/updates resources.
+
+6.terraform destroy
+Deletes all managed resources — use carefully!
+
+State Management
+1.terraform show
+Displays current infrastructure from state file.
+
+2.terraform state list
+Lists all resources tracked by Terraform.
+
+3.terraform state show <resource_name>
+Shows detailed info of a specific resource.
+
+Refresh & Output
+1.terraform refresh
+Syncs state with real-world infrastructure.
+
+2.terraform output
+Displays output variables from your config.
+
+Workspaces
+1.terraform workspace new dev
+terraform workspace select prod
+Manage multiple environments (dev, stage, prod).
+
+Resource Handling
+2.terraform import <type.name> <id>
+Imports existing cloud resources into Terraform.
+
+3.terraform taint <resource_name>
+Forces recreation of a specific resource.
+
+4.terraform untaint <resource_name>
+Cancels the taint and keeps the existing resource.
+
+Modules & Providers
+1.terraform get
+Downloads or updates modu1️⃣ Use Modular Structureles used in your config.
+
+2.terraform providers
+Lists all providers required by your configuration.
+
+Use terraform plan -out=tfplan and then terraform apply tfplan for safe, repeatable deployments in CI/CD pipelines.
+
+6)What are some Terraform best practices you follow in production environments?
+In production, I follow a modular Terraform structure with separate environments and remote state storage with locking using S3 + DynamoDB.
+I use version pinning, variables, and secret managers to avoid hardcoding.
+We enforce GitOps flow, where Terraform runs via CI/CD with plan → approval → apply steps. 
+All resources are tagged properly, and RBAC policies ensure only authorized users apply changes to Prod. 
+These practices help with stability, security, and consistency of infrastructure deployments.
+1️⃣ Use Modular Structure
+3️⃣ Use Remote Backend for Terraform State
+7️⃣ Use Variables, tfvars & Avoid Hardcoding
+8️⃣ Secrets Management
+9️⃣ Tag All Resources
+
+7)Explain a real-world use case where you automated infrastructure using Terraform.
+“In my last project, I automated AWS EKS infrastructure using Terraform.
+Earlier, the team was manually provisioning cloud resources, which caused delays and configuration drift across environments.
+I created reusable Terraform modules for VPC, EKS, RDS, networking and monitoring.
+State was stored remotely using S3 with DynamoDB locking, and changes were integrated into GitLab CI with plan → approval → apply gates. 
+As a result, provisioning time reduced from 2–3 days to under an hour, environments became consistent, and infra deployments became fully automated and auditable. 
+This significantly improved reliability and developer productivity.”
+
+8)How do you manage Terraform provider versioning?
+I manage Terraform provider versioning by pinning provider versions in the configuration using version constraints, 
+committing the terraform.lock.hcl file, and enforcing Terraform CLI version using required_version.
+This ensures consistency across developers and CI/CD. 
+Upgrades are done in a controlled manner using terraform init -upgrade and tested in lower environments before moving to production."
+
+9)How would you provision infra across 10 AWS regions simultaneously?
+First, I define the infrastructure using Infrastructure as Code, ideally Terraform with reusable modules for networking, compute, and security. 
+I separate global resources like IAM, Route53, and S3 from regional components like VPCs, subnets, EKS/ECS, or RDS to avoid conflicts.
+To deploy in parallel, I use either Terraform with Terragrunt or AWS CloudFormation StackSets. 
+With Terraform, I create region-specific workspaces or state files and trigger parallel runs through a CI/CD pipeline using GitHub Actions or Tekton —
+typically using a matrix job so each region is deployed at the same time.
+Remote state is stored in S3 with DynamoDB for state locking.
+Before rolling out to all 10 regions, I perform a canary deployment in one or two regions, run smoke tests, and then continue to the remaining regions
+to ensure security and compliance across regions. Post-deployment, I verify using CloudWatch, AWS Config, and drift detection.
+
+10)What to do when your Terraform state file becomes too large?
+When a Terraform state file becomes too large, the best approach is to split the infrastructure into smaller, modular state files
+to reduce blast radius and improve performance. 
+I start by refactoring the configuration into logical modules such as networking, compute, databases, and security.
+Each module gets its own state file by using separate Terraform workspaces, folders, or Terragrunt, and separate backend configurations.
+Another strategy is enabling state compression and versioning—remote backends compress older state snapshots, and old versions can be pruned if not required. 
+If many data sources or outputs are increasing state size, I reduce unnecessary outputs and avoid storing large data in the state.
+
+11)
 
