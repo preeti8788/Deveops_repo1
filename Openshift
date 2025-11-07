@@ -1,0 +1,63 @@
+1)You've deployed a critical microservice application on OpenShift, and users are reporting intermittent 503 Service Unavailable errors. How would you approach troubleshooting this?
+I would approach the 503 issue systematically: first verify pod health and probe configurations, ensure the service endpoints are correctly mapped, 
+check the OpenShift router and route configurations, and then inspect resource usage and application logs.
+I would also validate recent deployments, scaling behavior,and any network/service-mesh issues. 
+This layered approach helps identify whether the 503 originates from the application layer, service layer, or ingress/router layer
+
+2): A developer accidentally pushed a large, unoptimized Docker image (2GB+) to your internal OpenShift image registry.
+How would you handle this situation and prevent it from happening again?
+I would first clean up the large image and run image pruning to reclaim registry space. 
+Then I’d work with the developer to rebuild the image using multi-stage builds, minimal base images, and .dockerignore. To prevent recurrence,
+I’d enforce quotas on image sizes, add CI/CD checks to block large images before pushing, schedule registry image pruning, and educate developers on container best practices. 
+This ensures our registry remains optimized, cost-efficient, and compliant with our standards.”
+
+3)Image pruning means
+Image pruning is the process of removing unused or old container images and layers from the
+OpenShift registry to reclaim storage space and keep the registry clean and efficient.”
+
+4)You've noticed that several ImagePullBackOff errors are occurring in pods across different namespaces. What could be the common causes and how would you investigate?
+When ImagePullBackOff happens across multiple namespaces, I would look for cluster-wide issues like registry authentication failures, registry unavailability, 
+network or proxy changes, or node-level pull issues.
+I start by checking pod events, validating image tags, confirming imagePullSecrets, verifying internal registry health, and ensuring nodes can reach registries.
+Often the root cause is expired pull credentials or internal registry/storage issues.”
+oc describe pod <pod-name>
+oc get secrets -n <namespace> - check pull secrets
+oc get sa default -o yaml -n <namespace>
+oc get pods -n openshift-image-registry
+oc logs -n openshift-image-registry deploy/image-registry - Confirm Internal Registry Health
+oc get nodes
+oc describe node <node-name>
+curl https://registry-1.docker.io/v2/ - 6. Test Connectivity to External Registries
+
+5)How would you ensure resource quotas and limits are effectively enforced in a multi-tenant OpenShift environment?
+“To enforce resource usage in a multi-tenant OpenShift environment, I apply ResourceQuotas at project level and LimitRanges to enforce default and maximum limits per container. 
+For teams with multiple namespaces, I use ClusterResourceQuotas. I also implement governance using OPA/Gatekeeper policies to block resources without proper limits, and
+I continuously monitor quota usage with alerts.
+This ensures fair resource distribution, prevents noisy neighbors, and maintains cluster stability.”
+
+6)Hhighly used application is crashing due to multiple users accessing it how would u debug it
+1. Reproduce & Confirm the Nature of the Crash- Check logs for error patterns (e.g., OOMKilled, timeouts, thread limits, DB connection issues).
+2. Check Pod/Container Resource Issues- oc describe pod <pod>
+3. Inspect Application Logs for Failure Clues- oc logs <pod> -f
+4. Check Database & External Dependency
+5. Analyze Performance Metrics- Use OpenShift Monitoring, Prometheus, or Grafana to examine: Pod CPU/Memory usage trend
+6. Validate Scaling Behavior- oc get hpa
+oc describe hpa
+I would start by confirming if the crash is due to resource exhaustion, application errors, or downstream bottlenecks.
+I’d check pod events and logs to see if the container is OOMKilled or hitting CPU limits. 
+Then I’d analyze performance metrics to identify stress points such as database connection saturation or thread pool exhaustion.
+I’d verify if scaling is configured properly with HPA and whether enough resources are available.
+
+7)A critical OpenShift service is intermittently failing due to a rapid increase in requests, leading to pod restarts. How would you address this immediately and long-term?
+Immediately, I’d stabilize the service by increasing pod resources, scaling replicas, and enabling/improving HPA to handle the traffic spike. 
+Long-term, I’d implement a robust autoscaling strategy, optimize the application with caching and connection pooling, introduce service mesh-based rate-limiting and circuit breakers, 
+and add performance testing with proactive alerting.
+This ensures the service is resilient and won’t crash under sudden traffic surges again.”
+
+8)Your team wants to implement GitOps for managing OpenShift applications. Outline the key components and workflow you would establish
+To implement GitOps on OpenShift, I would use OpenShift GitOps (Argo CD) as the controller, Git as the single source of truth, and a CI pipeline to build and push images.
+Application manifests would be stored in a GitOps repo using Kustomize or Helm for environment variations.
+Argo CD continuously syncs clusters from Git and detects drift.
+Dev would auto-sync, while QA and Prod require pull-request approvals for promotion. 
+Policies, RBAC, automated testing, and observability ensure secure, compliant, and auditable deployments.”
+
