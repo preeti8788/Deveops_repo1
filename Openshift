@@ -61,3 +61,51 @@ Argo CD continuously syncs clusters from Git and detects drift.
 Dev would auto-sync, while QA and Prod require pull-request approvals for promotion. 
 Policies, RBAC, automated testing, and observability ensure secure, compliant, and auditable deployments.”
 
+9) You need to implement a blue/green deployment strategy for a critical application on OpenShift. Describe the steps and tools you would use.
+To implement Blue/Green deployment on OpenShift, I deploy two parallel versions of the application—Blue (current) and Green (new). 
+Each version has its own Deployment and Service. A single Route initially points to the Blue Service.
+After deploying and validating the Green version, I switch the route to direct traffic to Green, ensuring zero downtime. 
+If needed, rollback is as simple as switching the route back to Blue. For advanced traffic control, I can use Service Mesh to gradually shift percentage traffic. 
+This approach provides safe, controlled, and reversible deployments for critical applications.
+
+10)Your development team wants to deploy a stateful application (e.g., a database) on OpenShift. 
+What considerations and steps would you take to ensure data persistence and availability?
+I use StatefulSets along with PersistentVolumes to ensure stable identity and data persistence
+Use PersistentVolumeClaims (PVCs) with a suitable StorageClass
+Use a Headless Service to provide predictable DNS for each pod
+Because databases are sensitive to scaling and updates: 
+Upgrades
+Failover
+Backup/restore
+Monitoring
+
+11)How do you deploy an application from a Docker image in OpenShift?  
+oc login <cluster-url>
+oc new-project demo-app
+oc new-app <image-registry-url>/<image>:tag --name=myapp
+oc expose svc/nginx-app
+oc get pods,svc,route
+To deploy an application from a Docker image in OpenShift, I use oc new-app with the image reference to create an ImageStream, Deployment, and Service.
+Then I expose the service to create a Route for external access.
+If the image is private, I add a pull secret and link it to the service account before deploying.”
+
+12)How do you deploy an application from a Docker image in OpenShift?
+To deploy an application from a Docker image in OpenShift, I use oc new-app with the image reference to create an ImageStream, Deployment, and Service.
+Then I expose the service to create a Route for external access.
+If the image is private, I add a pull secret and link it to the service account before deploying.”
+
+13)How do you view logs for a specific pod in OpenShift?
+To view pod logs in OpenShift, I use oc logs <pod-name> or oc logs -f to stream logs. 
+If the pod has multiple containers, I specify the container using -c. 
+I can also use the OpenShift Web Console under Workloads → Pods → Logs to view and filter logs.
+
+14)what is route and 5. How do you create a route for your application in OpenShift?
+A Route in OpenShift exposes a service to the outside world by assigning a public hostname. To create a route,
+I typically use oc expose svc/<service-name> or create it via the Web Console under Networking → Routes.
+For external HTTPS access, I configure TLS termination like edge, passthrough, or re-encrypt.”
+oc get svc - create service
+oc expose svc/<service-name>- 
+oc expose svc/myapp-service
+oc get route
+
+
