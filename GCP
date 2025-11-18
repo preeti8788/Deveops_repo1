@@ -1,0 +1,20 @@
+1)Is cloudRun similar to GKE ?
+Cloud Run and GKE both run containers, but Cloud Run is fully serverless — 
+I only push a container, and Google handles scaling, networking, and infrastructure.
+GKE is a full Kubernetes platform where I manage clusters, nodes, deployments, autoscaling, and networking.
+Cloud Run is simpler and cost-effective, while GKE is for complex or large-scale workloads requiring full Kubernetes control.
+
+2)How to connect cloudRun applications to Compute Engine ?
+I mainly worked on GKE, Compute Engine, Cloud Storage, Cloud SQL, IAM, VPC networking,Cloud Build for CI/CD and Cloud Monitoring/Logging.
+Also used Pub/Sub, Cloud Run, and Secret Manager in some projects.
+
+3)What GCP Services have u worked on?
+I mainly worked on GKE, Compute Engine, Cloud Storage, Cloud SQL, IAM, VPC networking, Cloud Build for CI/CD, and Cloud Monitoring/Logging.
+Also used Pub/Sub, Cloud Run, and Secret Manager in some projects.
+
+4)What is the purpose of session affinity in load balancing ?
+Session affinity ensures a user’s requests always go to the same backend server, preventing session loss and 
+enabling seamless user experience for stateful applications.”
+
+5)How do you login into GKE clusters 
+
