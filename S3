@@ -81,3 +81,8 @@ To optimize this, I would partition the objects using meaningful prefixes such a
 For large-scale metadata operations, I would enable S3 Inventory and query the results using Athena instead of directly listing from the bucket.
 This avoids costly full-bucket scans and keeps performance predictable.
 
+18)Even after applying all the admin access to the user , when he is trying to access the s3 bucket he is getting an error as user access denied what could be the issue how to debug?
+Even with admin permissions, the user may get S3 Access Denied because S3 evaluates multiple permission layers.
+A bucket policy with explicit DENY, KMS key restrictions, SCPs, or missing ListBucket/GetObject permissions can override admin access. 
+To debug, check the IAM policy, bucket policy, KMS key policy, SCPs, encryption settings, and use AWS Policy Simulator to find the exact deny.”
+
