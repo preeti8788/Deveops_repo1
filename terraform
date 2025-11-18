@@ -13,6 +13,19 @@ If the VM is created with for_each, we remove the specific key from the map so T
 When resources are created using count, Terraform treats them as indexed resources like aws_instance.vm[0], aws_instance.vm[1], etc.
 To delete only one VM without destroying the others, I would target that specific instance using its index.
 
+3)If someone manually deletes a VM that is managed by Terraform, how does Terraform detect it and recreate it?
+Terraform state thinks the VM exists → real cloud has no VM → Terraform automatically plans to create it again.
+When a VM managed by Terraform is manually deleted, Terraform detects it during the next terraform plan because the resource in the state file does not match the real cloud infrastructure.
+Terraform marks the resource as missing and plans to recreate it to match the configuration. Running terraform apply will then re-provision the VM.”
+Terraform works in 3 layers:
+1. Desired State → your .tf files
+2. Current State → terraform.tfstate
+3. Real Cloud State → AWS/GCP/Azure API
+Terraform compares:
+actual cloud state  != terraform state file
+This is called drift detection.
+If Terraform detects drift (VM deleted), it recreates the resource automatically.
+
 3)Terraform taint command
 “To delete a single VM in Terraform without impacting the rest of the infrastructure, we use the terraform destroy -target=<resource> command. 
 For example, terraform destroy -target=aws_instance.web[1] deletes only that instance.
